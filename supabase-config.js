@@ -1,10 +1,10 @@
 window.SUPABASE_CONFIG = {
-  url: '',
-  anonKey:https://zwlnpcumalqioqknbgph.supabase.co/rest/v1/ ''
+  url: 'https://wbrmnvbcpvyqoqpbpemh.supabase.co',
+  anonKey: 'sb_publishable_UIgK0nB7eeE-T6nDd6fNmg_JnhcJ1r-'
 };
 
 window.CASA_DE_APOIO_CONFIG = {
   appName: 'Casa de Apoio Maná de Deus',
   requireAuthForDashboard: true,
-  mode: 'development'
+  mode: 'production'
 };
