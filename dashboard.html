@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Colaboradores | Casa de Apoio Maná de Deus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body { background: #fffaf2; color: var(--ink); font-family: 'DM Sans', sans-serif; }
+      .dashboard-shell { max-width: 1200px; margin: 40px auto; padding: 0 24px 80px; }
+      .topbar { display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #eadfd4; border-radius:18px; padding: 18px 22px; box-shadow: 0 12px 26px rgba(95,43,20,.06); }
+      .brand { display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--ink); }
+      .brand-logo { width:52px; height:52px; object-fit:cover; border-radius:16px; }
+      .nav-actions { display:flex; align-items:center; gap:14px; }
+      .status-pill { background:#eaf7ee; color:#246c42; padding:8px 12px; border-radius:999px; font-weight:700; font-size:12px; }
+      .btn-logout { border:none; background: var(--red); color:#fff; border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; }
+      .summary-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:16px; margin-top:24px; }
+      .card { background:#fff; border:1px solid #eadfd4; border-radius:18px; padding:20px; }
+      .card strong { display:block; font-size:2rem; font-family:'Fraunces', serif; margin-top:8px; }
+      .card span { color:var(--muted); }
+      .content-grid { display:grid; grid-template-columns: 1.4fr .85fr; gap:20px; margin-top:24px; }
+      .panel { background:#fff; border:1px solid #eadfd4; border-radius:18px; padding:22px; }
+      .row { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:22px; }
+      table { width:100%; border-collapse:collapse; }
+      th, td { text-align:left; padding:12px 10px; border-bottom:1px solid #f2e7db; }
+      th { color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.08em; }
+      .badge { display:inline-block; padding:7px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+      .badge.ativo { background:#eaf7ee; color:#246c42; }
+      .badge.em-acompanhamento { background:#fff3d6; color:#805d00; }
+      .badge.urgente { background:#ffe5df; color:#a1312d; }
+      .auth-box { background:#fff; border:1px solid #eadfd4; border-radius:18px; padding:24px; }
+      .auth-box input { width:100%; margin-top:8px; margin-bottom:14px; }
+      .auth-box .message { min-height:24px; font-size:14px; color:var(--muted); }
+      .hidden { display:none !important; }
+      @media (max-width: 800px) { .summary-grid, .content-grid { grid-template-columns:1fr 1fr; } .content-grid { grid-template-columns:1fr; } }
+      @media (max-width: 560px) { .summary-grid { grid-template-columns:1fr; } .topbar { flex-direction:column; align-items:flex-start; gap:12px; } }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-shell">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Voltar para a página inicial">
+          <img class="brand-logo" src="slogan da casa de apoio.jpg.jpeg" alt="Logo da Casa de Apoio Maná de Deus" />
+          <span>
+            <strong>Maná de Deus</strong><br />
+            <small>Colaboradores</small>
+          </span>
+        </a>
+        <div class="nav-actions">
+          <span class="status-pill" id="auth-status">Acesso pendente</span>
+          <button class="btn-logout" id="logout-button" type="button">Sair</button>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+        <article class="card">
+          <span>Total de acolhidos</span>
+          <strong id="total-acolhidos">0</strong>
+        </article>
+        <article class="card">
+          <span>Ativos hoje</span>
+          <strong id="ativos-hoje">0</strong>
+        </article>
+        <article class="card">
+          <span>Encaminhamentos</span>
+          <strong id="encaminhamentos">0</strong>
+        </article>
+        <article class="card">
+          <span>Última atualização</span>
+          <strong id="ultima-atualizacao">--</strong>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel" id="dashboard-panel">
+          <div class="row">
+            <h2 style="margin:0; font-family:'Fraunces', serif; font-size:2rem;">Acolhidos</h2>
+            <a class="button button-primary" href="index.html">Voltar ao site</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Status</th>
+                <th>Telefone</th>
+                <th>Última atualização</th>
+              </tr>
+            </thead>
+            <tbody id="acolhidos-table-body">
+              <tr>
+                <td colspan="4">Carregando dados...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="auth-box" id="login-box">
+          <p class="eyebrow"><span></span> Acesso restrito</p>
+          <h2 style="font-family:'Fraunces', serif; margin-top:0; font-size:2.2rem;">Entrar no<br />painel.</h2>
+          <label>
+            E-mail institucional
+            <input id="email-input" type="email" placeholder="seu.nome@manadeus.org.br" />
+          </label>
+          <label>
+            Senha
+            <input id="password-input" type="password" placeholder="••••••••" />
+          </label>
+          <button class="button button-primary full" id="login-button" type="button">Acessar painel</button>
+          <p class="message" id="auth-message">Configure a URL e a chave pública do Supabase para ativar o login real.</p>
+        </aside>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
