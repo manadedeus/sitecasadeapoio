@@ -17,6 +17,15 @@ function isConfigured() {
   return Boolean(config.url && config.anonKey && config.url !== '' && config.anonKey !== '');
 }
 
+function withTimeout(promise, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(message)), 15000);
+    })
+  ]);
+}
+
 function markLoggedOut() {
   state.signedIn = false;
   state.session = null;
@@ -61,7 +70,10 @@ async function loadDashboardData() {
     return;
   }
 
-  const { data, error } = await supabase.from('acolhidos').select('*').order('atualizado_em', { ascending: false });
+  const { data, error } = await withTimeout(
+    supabase.from('acolhidos').select('*').order('atualizado_em', { ascending: false }),
+    'O carregamento dos acolhidos demorou demais. Verifique sua conexão e tente novamente.'
+  );
   if (error) {
     authMessage.textContent = 'Erro ao carregar os dados do painel: ' + error.message;
     return;
@@ -90,17 +102,29 @@ async function login() {
   }
 
   authMessage.textContent = 'Entrando no painel...';
+  loginButton.disabled = true;
+  loginButton.textContent = 'Entrando...';
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    authMessage.textContent = 'Não foi possível entrar: ' + error.message;
-    return;
+  try {
+    const { data, error } = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      'O login demorou demais. Verifique sua conexão e tente novamente.'
+    );
+    if (error) {
+      authMessage.textContent = 'Não foi possível entrar: ' + error.message;
+      return;
+    }
+
+    state.session = data.session;
+    markLoggedIn();
+    authMessage.textContent = 'Login realizado com sucesso.';
+    await loadDashboardData();
+  } catch (error) {
+    authMessage.textContent = error.message || 'Não foi possível concluir o login.';
+  } finally {
+    loginButton.disabled = false;
+    loginButton.textContent = 'Acessar painel';
   }
-
-  state.session = data.session;
-  markLoggedIn();
-  authMessage.textContent = 'Login realizado com sucesso.';
-  await loadDashboardData();
 }
 
 async function logout() {
