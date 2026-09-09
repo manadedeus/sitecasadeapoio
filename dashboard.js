@@ -130,6 +130,18 @@ function currentMonthKey() {
   return new Date().toISOString().slice(0, 7);
 }
 
+function formatDateInput(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function calculateStayDays(start, end) {
+  if (!start || !end) return null;
+  const startDate = new Date(`${start}T00:00:00`);
+  const endDate = new Date(`${end}T00:00:00`);
+  const days = Math.max(0, Math.round((endDate - startDate) / 86400000));
+  return `${days} dia${days === 1 ? '' : 's'}`;
+}
+
 function updateOverview() {
   const currentMonth = currentMonthKey();
   const active = state.acolhidos.filter((item) => item.status === 'ativo').length;
@@ -199,8 +211,13 @@ async function saveRecord(event) {
   ['data_nascimento', 'data_entrada', 'data_desligamento'].forEach((field) => { if (!values[field]) values[field] = null; });
   const id = values.id;
   delete values.id;
-  values.atualizado_em = new Date().toISOString();
   const previous = id ? state.acolhidos.find((item) => item.id === id) : null;
+  const sameDocument = values.documento ? state.acolhidos.filter((item) => item.documento === values.documento && item.id !== id) : [];
+  if (!id && !values.codigo_acolhido) values.codigo_acolhido = `CAMD-${new Date().getFullYear()}-${String(state.acolhidos.length + 1).padStart(3, '0')}`;
+  if (!id && !values.reincidencia) values.reincidencia = sameDocument.length ? `${sameDocument.length + 1}ª entrada` : '1ª entrada';
+  if (values.status === 'egresso' && !values.data_desligamento) values.data_desligamento = formatDateInput(new Date());
+  if (values.status === 'egresso' && !values.tempo_na_casa) values.tempo_na_casa = calculateStayDays(values.data_entrada, values.data_desligamento);
+  values.atualizado_em = new Date().toISOString();
   const result = id ? await supabaseClient.from('acolhidos').update(values).eq('id', id) : await supabaseClient.from('acolhidos').insert(values).select().single();
   if (result.error) { authMessage.textContent = 'Não foi possível salvar: ' + result.error.message; return; }
   const saved = id ? { id, ...values } : result.data;

@@ -144,3 +144,44 @@ create policy configuracoes_write_authenticated on public.configuracoes_casa
 
 create index if not exists movimentacoes_acolhido_idx on public.acolhido_movimentacoes(acolhido_id, data_evento desc);
 create index if not exists movimentacoes_tipo_data_idx on public.acolhido_movimentacoes(tipo, data_evento);
+
+-- Regras automáticas também no banco, para proteger importações e outros clientes.
+create or replace function public.preparar_acolhido()
+returns trigger
+language plpgsql
+as $$
+declare
+  entradas_anteriores integer;
+  proximo_codigo integer;
+begin
+  if new.codigo_acolhido is null or btrim(new.codigo_acolhido) = '' then
+    select coalesce(max(nullif(regexp_replace(codigo_acolhido, '\D', '', 'g'), '')::integer), 0) + 1
+      into proximo_codigo
+      from public.acolhidos
+     where codigo_acolhido like 'CAMD-%';
+    new.codigo_acolhido := 'CAMD-' || extract(year from coalesce(new.data_entrada, current_date))::integer || '-' || lpad(proximo_codigo::text, 3, '0');
+  end if;
+
+  if (new.reincidencia is null or btrim(new.reincidencia) = '') and new.documento is not null then
+    select count(*) into entradas_anteriores
+      from public.acolhidos
+     where documento = new.documento and (tg_op = 'INSERT' or id <> new.id);
+    new.reincidencia := (entradas_anteriores + 1)::text || 'ª entrada';
+  end if;
+
+  if new.status = 'egresso' and new.data_desligamento is null then
+    new.data_desligamento := current_date;
+  end if;
+
+  if new.status = 'egresso' and new.tempo_na_casa is null and new.data_entrada is not null then
+    new.tempo_na_casa := greatest(new.data_desligamento - new.data_entrada, 0)::text || ' dias';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists preparar_acolhido_automatico on public.acolhidos;
+create trigger preparar_acolhido_automatico
+before insert or update on public.acolhidos
+for each row execute function public.preparar_acolhido();
