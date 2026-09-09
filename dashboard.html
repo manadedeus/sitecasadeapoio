@@ -42,6 +42,16 @@
       .editor-grid .wide { grid-column:1 / -1; }
       .editor-grid textarea { min-height:74px; }
       .table-wrap { overflow:auto; }
+      .system-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-top:24px; }
+      .system-tab { border:1px solid #eadfd4; background:#fff; color:var(--ink); border-radius:10px; padding:11px 15px; font-weight:700; cursor:pointer; }
+      .system-tab.active { background:var(--red); color:#fff; border-color:var(--red); }
+      .system-view { margin-top:20px; }
+      .report-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; }
+      .report-grid .card { min-height:92px; }
+      .report-controls { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+      .report-controls label { min-width:140px; }
+      .report-controls button { height:44px; }
+      .summary-table { margin-top:18px; }
       .hidden { display:none !important; }
       @media (max-width: 800px) { .summary-grid, .content-grid { grid-template-columns:1fr 1fr; } .content-grid { grid-template-columns:1fr; } }
       @media (max-width: 560px) { .summary-grid { grid-template-columns:1fr; } .topbar { flex-direction:column; align-items:flex-start; gap:12px; } }
@@ -63,6 +73,29 @@
         </div>
       </header>
 
+      <nav class="system-tabs" aria-label="Módulos do sistema">
+        <button class="system-tab active" data-view="overview-view" type="button">Dashboard</button>
+        <button class="system-tab" data-view="records-view" type="button">Cadastros</button>
+        <button class="system-tab" data-view="history-view" type="button">Histórico</button>
+        <button class="system-tab" data-view="reports-view" type="button">Relatórios</button>
+      </nav>
+
+      <section id="overview-view" class="system-view hidden">
+        <div class="panel">
+          <div class="row"><div><h2 style="margin:0; font-family:'Fraunces', serif; font-size:2rem;">Visão geral da Casa</h2><p class="muted">Indicadores calculados a partir dos cadastros e movimentações.</p></div></div>
+          <div class="report-grid">
+            <article class="card"><span>Ativos agora</span><strong id="overview-ativos">0</strong></article>
+            <article class="card"><span>Novos no mês</span><strong id="overview-entradas">0</strong></article>
+            <article class="card"><span>Saídas no mês</span><strong id="overview-saidas">0</strong></article>
+            <article class="card"><span>Vagas disponíveis</span><strong id="overview-vagas">0</strong></article>
+          </div>
+          <div class="report-controls" style="margin-top:20px;">
+            <label>Capacidade total<input id="capacity-input" type="number" min="0" placeholder="Defina a capacidade" /></label>
+            <button class="button button-secondary" id="capacity-save" type="button">Salvar capacidade</button>
+          </div>
+        </div>
+      </section>
+
       <section class="summary-grid">
         <article class="card">
           <span>Total de acolhidos</span>
@@ -83,7 +116,7 @@
       </section>
 
       <section class="content-grid">
-        <div class="panel" id="dashboard-panel">
+        <div class="panel system-view hidden" id="dashboard-panel">
           <div class="row">
             <h2 style="margin:0; font-family:'Fraunces', serif; font-size:2rem;">Acolhidos</h2>
             <a class="button button-primary" href="index.html">Voltar ao site</a>
@@ -135,6 +168,19 @@
           <button class="button button-primary full" id="login-button" type="button">Acessar painel</button>
           <p class="message" id="auth-message">Configure a URL e a chave pública do Supabase para ativar o login real.</p>
         </aside>
+      </section>
+
+      <section id="history-view" class="system-view panel hidden">
+        <div class="row"><div><h2 style="margin:0; font-family:'Fraunces', serif; font-size:1.7rem;">Histórico de acolhimentos</h2><p class="muted">Registros de pessoas que já passaram pela Casa, sem apagar o histórico.</p></div><span class="muted" id="history-meta">0 registros</span></div>
+        <div class="toolbar"><input id="history-search" type="search" placeholder="Pesquisar no histórico" /><input id="history-start" type="date" /><input id="history-end" type="date" /></div>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Entrada</th><th>Saída</th><th>Motivo</th><th>Origem</th><th>Código</th></tr></thead><tbody id="history-table-body"><tr><td colspan="6">Nenhum registro carregado.</td></tr></tbody></table></div>
+      </section>
+
+      <section id="reports-view" class="system-view panel hidden">
+        <div class="row"><div><h2 style="margin:0; font-family:'Fraunces', serif; font-size:1.7rem;">Relatório mensal</h2><p class="muted">Selecione o período para recalcular os indicadores automaticamente.</p></div></div>
+        <div class="report-controls"><label>Mês<select id="report-month"></select></label><label>Ano<select id="report-year"></select></label><button class="button button-primary" id="generate-report" type="button">Gerar relatório</button></div>
+        <div class="report-grid" style="margin-top:20px;"><article class="card"><span>Total no período</span><strong id="report-total">0</strong></article><article class="card"><span>Novos acolhimentos</span><strong id="report-entradas">0</strong></article><article class="card"><span>Saídas</span><strong id="report-saidas">0</strong></article><article class="card"><span>Permaneceram</span><strong id="report-permaneceram">0</strong></article></div>
+        <div class="summary-table"><table><thead><tr><th>Indicador</th><th>Resultado</th></tr></thead><tbody id="report-table-body"><tr><td colspan="2">Gere um relatório para consultar os resultados.</td></tr></tbody></table></div>
       </section>
     </div>
 
