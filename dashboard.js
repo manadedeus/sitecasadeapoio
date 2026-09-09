@@ -13,6 +13,8 @@ const state = {
   signedIn: false
 };
 
+let supabaseClient = null;
+
 function isConfigured() {
   return Boolean(config.url && config.anonKey && config.url !== '' && config.anonKey !== '');
 }
@@ -65,7 +67,7 @@ function renderAcolhidos(rows) {
 }
 
 async function loadDashboardData() {
-  const supabase = window.supabase;
+  const supabase = supabaseClient;
   if (!supabase || !state.session) {
     return;
   }
@@ -95,7 +97,7 @@ async function login() {
     return;
   }
 
-  const supabase = window.supabase;
+  const supabase = supabaseClient;
   if (!supabase || !isConfigured()) {
     authMessage.textContent = 'Ainda falta configurar a URL e a chave pública do Supabase no arquivo supabase-config.js.';
     return;
@@ -128,7 +130,7 @@ async function login() {
 }
 
 async function logout() {
-  const supabase = window.supabase;
+  const supabase = supabaseClient;
   if (!supabase) return;
   await supabase.auth.signOut();
   markLoggedOut();
@@ -143,11 +145,12 @@ function initializeSupabase() {
     return;
   }
 
-  window.supabase = window.supabase || window.createClient(config.url, config.anonKey);
-  if (typeof window.supabase === 'undefined') {
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     authMessage.textContent = 'A biblioteca do Supabase não carregou corretamente.';
     return;
   }
+
+  supabaseClient = window.supabase.createClient(config.url, config.anonKey);
 
   authMessage.textContent = 'Supabase conectado. Faça login com a conta do colaborador.';
   markLoggedOut();
