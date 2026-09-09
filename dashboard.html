@@ -34,6 +34,14 @@
       .auth-box { background:#fff; border:1px solid #eadfd4; border-radius:18px; padding:24px; }
       .auth-box input { width:100%; margin-top:8px; margin-bottom:14px; }
       .auth-box .message { min-height:24px; font-size:14px; color:var(--muted); }
+      .toolbar { display:grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap:10px; margin-bottom:14px; }
+      .toolbar input, .toolbar select { margin:0; }
+      .editor { border-top:1px solid #f2e7db; padding-top:18px; margin-top:18px; }
+      .editor-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; }
+      .editor-grid label { font-size:12px; }
+      .editor-grid .wide { grid-column:1 / -1; }
+      .editor-grid textarea { min-height:74px; }
+      .table-wrap { overflow:auto; }
       .hidden { display:none !important; }
       @media (max-width: 800px) { .summary-grid, .content-grid { grid-template-columns:1fr 1fr; } .content-grid { grid-template-columns:1fr; } }
       @media (max-width: 560px) { .summary-grid { grid-template-columns:1fr; } .topbar { flex-direction:column; align-items:flex-start; gap:12px; } }
@@ -80,13 +88,29 @@
             <h2 style="margin:0; font-family:'Fraunces', serif; font-size:2rem;">Acolhidos</h2>
             <a class="button button-primary" href="index.html">Voltar ao site</a>
           </div>
-          <table>
+            <div class="toolbar">
+              <input id="search-input" type="search" placeholder="Buscar por nome, código ou CPF" />
+              <select id="status-filter">
+                <option value="todos">Todos os status</option>
+                <option value="ativo">Ativos</option>
+                <option value="egresso">Já passaram pela casa</option>
+                <option value="em_acompanhamento">Em acompanhamento</option>
+                <option value="urgente">Urgentes</option>
+              </select>
+              <input id="origin-filter" type="search" placeholder="Filtrar encaminhamento" />
+              <button class="button button-ghost" id="new-record" type="button">Novo cadastro</button>
+              <button class="button button-ghost" id="import-trigger" type="button">Importar</button>
+              <input id="csv-input" type="file" accept=".csv,.xlsx,.xls" class="hidden" />
+            </div>
+            <div id="record-editor" class="editor hidden"></div>
+            <div class="table-wrap"><table>
             <thead>
               <tr>
                 <th>Nome</th>
                 <th>Status</th>
                 <th>Telefone</th>
                 <th>Última atualização</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody id="acolhidos-table-body">
@@ -94,7 +118,7 @@
                 <td colspan="4">Carregando dados...</td>
               </tr>
             </tbody>
-          </table>
+            </table></div>
         </div>
 
         <aside class="auth-box" id="login-box">
@@ -115,6 +139,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="supabase-config.js"></script>
     <script src="dashboard.js"></script>
   </body>
