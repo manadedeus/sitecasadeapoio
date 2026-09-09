@@ -151,7 +151,7 @@ function handleTableClick(event) {
 }
 
 function normalizeHeader(value) {
-  return (value || '').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return (value || '').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s:?.]+$/g, '').replace(/\s+/g, ' ');
 }
 
 function importRows(rows) {
@@ -160,7 +160,7 @@ function importRows(rows) {
     rg: ['rg'], telefone: ['contato', 'telefone'], origem_encaminhamento: ['enviado', 'origem'], naturalidade: ['naturalidade / estado'],
     nome_pai: ['nome do pai'], nome_mae: ['nome da mae'], contato_familiar: ['contato do pai/mae'], dependentes_renda: ['pessoas que dependem da renda familiar'],
     renda_familiar: ['renda familiar'], problemas_justica: ['problemas com a justica'], problemas_vicios: ['problemas com vicios'], data_entrada: ['data de entrada'],
-    beneficiario_programas: ['beneficiario de programas'], observacoes: ['observacao'], status: ['situacao', 'status'], motivo_desligamento: ['motivo de deligamento'],
+    beneficiario_programas: ['beneficiario de programas', 'acolido e beneficiario de programas e beneficios'], observacoes: ['observacao'], status: ['situacao', 'status'], motivo_desligamento: ['motivo de deligamento'],
     data_desligamento: ['data de deligamento'], tempo_na_casa: ['tempo na casa'], reincidencia: ['reincidencia'], codigo_acolhido: ['codigo do acolhido']
   };
   return rows.map((row) => {
